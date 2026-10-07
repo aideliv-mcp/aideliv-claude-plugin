@@ -1,0 +1,10 @@
+{
+  "name": "aideliv",
+  "version": "0.1.0",
+  "description": "Create AiDeliv freight orders, follow carriers' rates and add shipping details from Claude.",
+  "author": {
+    "name": "AiDeliv"
+  },
+  "homepage": "https://aideliv.com",
+  "keywords": ["freight", "shipping", "logistics", "amazon-fba", "aideliv"]
+}
