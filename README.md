@@ -1,21 +1,29 @@
 # AiDeliv plugin for Claude
 
-Create freight orders on [AiDeliv](https://aideliv.com), follow the rates carriers send, and add shipping details, from Claude.
+Launch freight auctions on [AiDeliv](https://aideliv.com) from Claude: prepare a delivery order, follow the current lowest price while carriers bid, and add delivery details after you confirm the final price.
 
-AiDeliv is a freight platform: a customer creates an order, carriers send rates (bids) during a short window, and the customer chooses a rate in the AiDeliv cabinet. There is no price before rates arrive, so the plugin never estimates one.
+AiDeliv is a technology marketplace built on a patent-pending auction engine. Each delivery order runs as an auction:
+
+- Pre-vetted carriers bid against each other for 9 hours.
+- You always see the current lowest price, and it updates whenever a carrier bids lower.
+- When bidding closes, the lowest bid is your final price. You confirm it in your AiDeliv account within 24 hours; if you don't, the auction closes and a new auction is needed.
+
+There is no price before the auction, so the plugin never estimates one.
+
+Ship from China, Vietnam, India, Taiwan or Bangladesh to the US, Canada, the UK, Europe and more. Deliver to Amazon FBA and AWD, Walmart Fulfillment Services, a 3PL warehouse, or your own warehouse or business address. Shipments within the US are not available at the moment.
 
 ## What is in the plugin
 
 | Part | Name | What it does |
 |---|---|---|
 | MCP server | `aideliv` | Connects Claude to `https://aideliv.com/mcp` (Streamable HTTP, OAuth) |
-| Skill | `aideliv-orders` | Explains how to create orders, follow rates and add shipping details without guessing data or spending points before the customer confirms |
-| Command | `/aideliv-order` | Starts an order from a description or from an Amazon FBA shipment |
-| Command | `/aideliv-status` | Shows the status and rates of the customer's orders |
+| Skill | `aideliv-orders` | Explains how to create delivery orders, follow auctions and add delivery details without guessing data or spending points before the customer confirms |
+| Command | `/aideliv-order` | Starts a delivery order from a description or from an Amazon FBA shipment |
+| Command | `/aideliv-status` | Shows the status and current lowest price of the customer's orders |
 
 ## Install
 
-Add the connection:
+Add the plugin from the Claude directory, or add the connection only:
 
 ```
 claude mcp add --transport http aideliv https://aideliv.com/mcp
@@ -28,30 +36,30 @@ git clone https://github.com/aideliv-mcp/aideliv-claude-plugin
 claude --plugin-dir ./aideliv-claude-plugin
 ```
 
-Then open `/mcp`, choose `aideliv` and sign in with your AiDeliv customer account. Only customer accounts can use the connector.
+Then open `/mcp`, choose `aideliv` and sign in with your AiDeliv shipper account. Only shipper accounts can use the connector.
 
 ## Tools
 
-| Tool | Access | Purpose |
-|---|---|---|
-| `aideliv_get_account_context` | read | Account status, verification, points balance, whether an order can be created now |
-| `aideliv_get_reference_data` | read | Ids for countries, shipping types, shipment types, categories and units |
-| `aideliv_list_orders` | read | The customer's orders, newest first |
-| `aideliv_get_order` | read | One order with its addresses and cargo totals |
-| `aideliv_list_rates` | read | Rates carriers offered on one order |
-| `aideliv_prepare_order` | write | Validates order data and saves a draft. Creates no order, charges nothing |
-| `aideliv_create_order` | write | Creates the order from a confirmed draft and spends points |
-| `aideliv_set_delivery_details` | write | Adds Amazon shipments or a private address to an order whose rate was chosen |
+| Tool | Title | Access | Purpose |
+|---|---|---|---|
+| `aideliv_get_account_context` | Get account status | read | Account status, verification, points balance, whether an order can be created now |
+| `aideliv_get_reference_data` | Get reference data | read | Ids for countries, shipping types, shipment types, categories, units and land routes |
+| `aideliv_list_orders` | List delivery orders (auctions) | read | The customer's orders, newest first |
+| `aideliv_get_order` | Get delivery order (auction) details | read | One order with its addresses, cargo totals and bidding deadline |
+| `aideliv_list_rates` | Get current lowest price (auction) | read | The current lowest bid while bidding is open; the final price once it closes |
+| `aideliv_prepare_order` | Prepare delivery order draft | write | Validates order data and saves a draft. Creates no order, charges nothing |
+| `aideliv_create_order` | Create delivery order and start auction | write | Creates the order from a confirmed draft, starts the auction and spends points |
+| `aideliv_set_delivery_details` | Add delivery details to an order | write | Adds Amazon shipments or a private address after the final price is confirmed |
 
 ## Permissions (OAuth scopes)
 
 | Scope | Allows |
 |---|---|
 | `mcp:use` | Connect to AiDeliv through MCP |
-| `aideliv:read` | View your account, orders and rates |
-| `aideliv:orders:write` | Create orders and add shipping details on your behalf |
+| `aideliv:read` | View your account, orders and prices |
+| `aideliv:orders:write` | Create orders and add delivery details on your behalf |
 
-You can connect with `mcp:use` and `aideliv:read` only. Then Claude can look at your orders and rates but cannot create or change anything.
+You can connect with `mcp:use` and `aideliv:read` only. Then Claude can look at your orders and prices but cannot create or change anything.
 
 ## Data the plugin receives and sends
 
@@ -61,33 +69,40 @@ The plugin has no code of its own and no other servers. Everything goes between 
 - Account status, verification state and points balance.
 - Reference lists (countries, shipping types, units, categories).
 - The customer's own orders: status, countries, pick-up and delivery addresses, cargo totals and deadlines.
-- Rates carriers offered on those orders: price in USD, delivery time, covered addresses. Carriers are anonymous.
+- The current lowest price of each auction: price in USD, delivery time, covered addresses. Carriers are anonymous, and higher bids are not shown.
 
 **Sent to AiDeliv**
 - Order data the customer gave: shipping type, countries, pick-up and delivery addresses, cargo lines (description, category, quantity, weight, volume, dimensions, HS code), invoice number.
-- Shipping details for an order: Amazon shipment ids, Amazon reference ids and number of boxes, or a private delivery address with city, zip code, street, contact person, and an email or a phone.
+- Delivery details for an order: Amazon shipment ids, Amazon reference ids and number of boxes, or a private delivery address with city, zip code, street, contact person, and an email or a phone.
 - Drafts and confirmation codes returned by the server, to confirm an order.
 
 **Not collected**
-- The plugin does not read the customer's Amazon account. If the customer has a separate Amazon connector, Claude may read a shipment there and send only the values an order needs to AiDeliv. Amazon tokens and credentials are never copied anywhere.
+- The plugin does not read the customer's Amazon account. If the customer has also connected the Amazon Selling Partner connector in Claude, Claude may read a shipment there and send only the values an order needs to AiDeliv. Sales, inventory and buyer orders are not read. Amazon tokens and credentials are never copied anywhere.
 - The plugin does not read local files and does not send data to any third party.
 
 **Storage and logging on the AiDeliv side**
-- Orders and shipping details are stored in the customer's AiDeliv account, as when they are created in the web cabinet.
+- Orders and delivery details are stored in the customer's AiDeliv account, as when they are created in the web cabinet.
 - Unconfirmed drafts expire after 30 minutes.
 - A server activity log records identifiers and outcomes of MCP calls (for example the order id and the kind of action), not addresses, contacts or prices.
 - Access tokens are issued through OAuth with PKCE. An access token lasts one hour and a refresh token 30 days. Sign out of the connector in Claude to stop access.
 
 ## Safety rules built into the skill
 
-- Prices, delivery times and fees are only quoted as the server returns them.
+- Prices, delivery times and fees are quoted only as the server returns them.
 - Order data is never invented: Claude asks the customer for anything missing.
+- An auction is started only when the cargo is ready to ship.
 - An order is created, and points are spent, only after the customer has seen the server's summary and confirmed it explicitly.
-- Choosing a rate is done by the customer in the AiDeliv cabinet. Claude cannot accept a rate.
+- The final price is confirmed by the customer in the AiDeliv account. Claude cannot confirm it.
+
+## Works alongside Amazon
+
+Works alongside the Amazon Selling Partner connector in Claude: if you have connected it, Claude can read your FBA shipment details and fill in the delivery order for you.
+
+Amazon and all related marks are trademarks of Amazon.com, Inc. or its affiliates. Walmart is a trademark of Walmart Inc. AiDeliv is not affiliated with or endorsed by Amazon or Walmart.
 
 ## Support
 
-[https://aideliv.com](https://aideliv.com)
+[https://aideliv.com](https://aideliv.com) · support@aideliv.com
 
 ## License
 

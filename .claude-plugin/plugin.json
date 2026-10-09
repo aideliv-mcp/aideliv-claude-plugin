@@ -1,10 +1,13 @@
 {
   "name": "aideliv",
-  "version": "0.1.0",
-  "description": "Create AiDeliv freight orders, follow carriers' rates and add shipping details from Claude.",
+  "displayName": "AiDeliv",
+  "version": "0.2.0",
+  "description": "Launch AiDeliv freight auctions from Claude: prepare a delivery order, follow the current lowest price as pre-vetted carriers bid, and add delivery details after you confirm the final price.",
   "author": {
-    "name": "AiDeliv"
+    "name": "AiDeliv Inc.",
+    "url": "https://aideliv.com"
   },
   "homepage": "https://aideliv.com",
-  "keywords": ["freight", "shipping", "logistics", "amazon-fba", "aideliv"]
+  "license": "MIT",
+  "keywords": ["freight", "freight-auction", "shipping", "logistics", "amazon-fba", "aideliv"]
 }
