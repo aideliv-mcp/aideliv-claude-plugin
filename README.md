@@ -47,6 +47,7 @@ Then open `/mcp`, choose `aideliv` and sign in with your AiDeliv shipper account
 | `aideliv_list_orders` | List delivery orders (auctions) | read | The customer's orders, newest first |
 | `aideliv_get_order` | Get delivery order (auction) details | read | One order with its addresses, cargo totals and bidding deadline |
 | `aideliv_list_rates` | Get current lowest price (auction) | read | The current lowest bid while bidding is open; the final price once it closes |
+| `aideliv_upload_file` | Upload a file for an order | write | Downloads a photo, certificate or invoice from a public https link and returns a `file_id` to attach to a draft |
 | `aideliv_prepare_order` | Prepare delivery order draft | write | Validates order data and saves a draft. Creates no order, charges nothing |
 | `aideliv_create_order` | Create delivery order and start auction | write | Creates the order from a confirmed draft, starts the auction and spends points |
 | `aideliv_set_delivery_details` | Add delivery details to an order | write | Adds Amazon shipments or a private address after the final price is confirmed |
@@ -73,6 +74,7 @@ The plugin has no code of its own and no other servers. Everything goes between 
 
 **Sent to AiDeliv**
 - Order data the customer gave: shipping type, countries, pick-up and delivery addresses, cargo lines (description, category, quantity, weight, volume, dimensions, HS code), invoice number.
+- Links to photos, certificates, packing lists or invoices the customer wants attached to an order (for example from an Amazon listing). AiDeliv downloads each file itself from the https link; the plugin does not read or send the file contents.
 - Delivery details for an order: Amazon shipment ids, Amazon reference ids and number of boxes, or a private delivery address with city, zip code, street, contact person, and an email or a phone.
 - Drafts and confirmation codes returned by the server, to confirm an order.
 
@@ -83,6 +85,7 @@ The plugin has no code of its own and no other servers. Everything goes between 
 **Storage and logging on the AiDeliv side**
 - Orders and delivery details are stored in the customer's AiDeliv account, as when they are created in the web cabinet.
 - Unconfirmed drafts expire after 30 minutes.
+- An uploaded file that is not attached to an order within 24 hours is deleted.
 - A server activity log records identifiers and outcomes of MCP calls (for example the order id and the kind of action), not addresses, contacts or prices.
 - Access tokens are issued through OAuth with PKCE. An access token lasts one hour and a refresh token 30 days. Sign out of the connector in Claude to stop access.
 
@@ -90,6 +93,7 @@ The plugin has no code of its own and no other servers. Everything goes between 
 
 - Prices, delivery times and fees are quoted only as the server returns them.
 - Order data is never invented: Claude asks the customer for anything missing.
+- Photos and certificates are attached only if they exist: Claude uses links taken from the page, never invents a document, and tells the customer when a file comes from an unfamiliar source.
 - An auction is started only when the cargo is ready to ship.
 - An order is created, and points are spent, only after the customer has seen the server's summary and confirmed it explicitly.
 - The final price is confirmed by the customer in the AiDeliv account. Claude cannot confirm it.

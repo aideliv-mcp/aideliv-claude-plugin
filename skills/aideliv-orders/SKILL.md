@@ -36,18 +36,20 @@ There is no price before the auction. You work only for the connected customer, 
    - pick-up address, in the origin country;
    - one or more delivery addresses in the destination country, each different. Use the full warehouse address, for example the exact Amazon fulfillment center: the auction prices each address;
    - for every delivery, one or more cargo lines: what the goods are, category, quantity, weight and volume (with their units), dimension unit, and optionally dimensions, gross weight and HS code.
-4. `aideliv_prepare_order`. It creates no order and charges nothing.
+4. Photos and certificates are optional. If the customer wants them attached (for example from an Amazon listing), upload each one with `aideliv_upload_file` using a direct https link taken from the page. Never guess a link or invent a document: if the listing has none, skip this step. Use `type` `cargo_photo`, `certificate` or `invoice` (packing lists too). The `file_id` is valid for 24 hours. If the result has `warnings`, tell the customer where the file came from.
+   - `FILE_TOO_LARGE`, `FILE_TYPE_NOT_ALLOWED`, `URL_NOT_ALLOWED`, `DOWNLOAD_FAILED` come from the upload: tell the customer what happened, then skip the file or try another link.
+5. `aideliv_prepare_order`. It creates no order and charges nothing. Give the `file_id`s as `{"id": "..."}` in `photo_cargo`, `certificate` or `invoice_files` of the delivery they belong to.
    - On `VALIDATION_FAILED`, read `field_errors`, fix those fields with the customer and call again.
    - To change a draft, call again with its `draft_id` and the **complete** data. The old confirmation code stops working.
-5. Show the `summary` and ask the customer to confirm. Point out anything they may not expect:
+6. Show the `summary` (including `attachments`: the files attached to each address) and ask the customer to confirm. Point out anything they may not expect:
    - `minimum_weight_applied`: the platform charges at least `minimum_weight_kg`, so the weight was topped up;
    - `points.cost` and `points.charged_on_creation` (false means the order waits for account approval);
    - `bidding.opens_at` and `closes_at`, and `decision.until`: the deadline to confirm the final price.
-6. After an explicit yes: `aideliv_create_order` with the `draft_id`, `draft_version` and `confirmation_code` of that draft.
+7. After an explicit yes: `aideliv_create_order` with the `draft_id`, `draft_version` and `confirmation_code` of that draft.
    - `DRAFT_EXPIRED` or `DRAFT_STALE`: prepare again and let the customer confirm the new summary.
    - `INSUFFICIENT_POINTS`: tell them how many points are missing.
    - Calling it again for the same draft returns the same order (`already_created`), never a second one.
-7. Tell the customer the order id (`formatted_id`), that the auction is running, and when bidding closes.
+8. Tell the customer the order id (`formatted_id`), that the auction is running, and when bidding closes.
 
 ## Following an order
 
