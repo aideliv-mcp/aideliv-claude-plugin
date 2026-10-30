@@ -1,7 +1,7 @@
 {
   "name": "aideliv",
   "displayName": "AiDeliv",
-  "version": "0.3.0",
+  "version": "0.2.0",
   "description": "Launch AiDeliv freight auctions from Claude: prepare a delivery order, follow the current lowest price as pre-vetted carriers bid, and add delivery details after you confirm the final price.",
   "author": {
     "name": "AiDeliv Inc.",

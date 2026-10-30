@@ -47,11 +47,9 @@ Then open `/mcp`, choose `aideliv` and sign in with your AiDeliv shipper account
 | `aideliv_list_orders` | List delivery orders (auctions) | read | The customer's orders, newest first |
 | `aideliv_get_order` | Get delivery order (auction) details | read | One order with its addresses, cargo totals and bidding deadline |
 | `aideliv_list_rates` | Get current lowest price (auction) | read | The current lowest bid while bidding is open; the final price once it closes |
-| `aideliv_show_progress_statistics` | Show delivery progress statistics | read | Live "Progress statistics" panel (MCP Apps): tracking step and dates per delivery address of active and completed orders |
 | `aideliv_upload_file` | Upload a file for an order | write | Downloads a photo, certificate or invoice from a public https link and returns a `file_id` to attach to a draft |
 | `aideliv_prepare_order` | Prepare delivery order draft | write | Validates order data and saves a draft. Creates no order, charges nothing |
 | `aideliv_create_order` | Create delivery order and start auction | write | Creates the order from a confirmed draft, starts the auction and spends points |
-| `aideliv_accept_rate` | Accept a bid and start the delivery | write | Accepts the customer's chosen bid and moves the order to active, once the factory contact is given and the server has the Amazon check of every delivery address |
 | `aideliv_set_delivery_details` | Add delivery details to an order | write | Adds Amazon shipments or a private address after the final price is confirmed |
 
 ## Permissions (OAuth scopes)
